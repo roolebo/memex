@@ -1,4 +1,4 @@
-# memex
+# memex: Work as you think
 
 <img src="memex.jpg" alt="A reconstruction of the Memex desk" width="400">
 
