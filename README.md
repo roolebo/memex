@@ -40,14 +40,28 @@ Tests run offline, with fake adapters: `test/run [TEST...]`.
 
 ## Integrations
 
-Adapters:
+What memex can do with each service:
 
-- [memex-gerrit]: discussion in Gerrit
-- [memex-github]: discussion in GitHub pull requests, tracker in issues,
-  ci in Actions
-- [memex-jira]: tracker in JIRA
-- [memex-jenkins]: ci in Jenkins
-- [memex-maloo]: ci in Maloo
+| Reviews                                       | Gerrit | GitHub |
+| --------------------------------------------- | :----: | :----: |
+| Find the review of a commit, read its threads |   ✓    |   ✓    |
+| Follow a patch series                         |   ✓    |        |
+| Reply in drafts, then publish                 |   ✓    |        |
+
+| Issues                 | JIRA | GitHub |
+| ---------------------- | :--: | :----: |
+| Read and search issues |  ✓   |   ✓    |
+| Comment, change status |  ✓   |   ✓    |
+
+| CI                                      | Jenkins | Maloo | Actions |
+| --------------------------------------- | :-----: | :---: | :-----: |
+| Find the runs of a commit, their suites |    ✓    |   ✓   |    ✓    |
+| Results of each test                    |    ✓    |   ✓   |         |
+| Logs                                    |    ✓    |       |    ✓    |
+| Run again                               |    ✓    |   ✓   |    ✓    |
+
+Adapters: [memex-gerrit], [memex-github], [memex-jira], [memex-jenkins],
+[memex-maloo].
 
 Editors:
 
