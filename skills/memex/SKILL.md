@@ -1,0 +1,54 @@
+---
+name: memex
+description: Read the review threads, CI results and issues of the change
+  the user works on, through memex. Use when the user asks about review
+  comments, reviewer feedback, CI failures or bugs of their change, or
+  about the review comment at their cursor.
+---
+
+# memex
+
+`memex` runs the adapters bound to a role for the working copy in the
+current directory. It prints RECORDs, one JSON object per line. The
+protocol is in PROTOCOL.md at the root of the memex repository, two
+levels above this file; each role has its own file next to it.
+
+    memex bindings                  what each role is bound to
+    memex ROLE COMMAND [ARGUMENTS]  run a role's command
+
+Exit status 2: the adapter doesn't support the command.
+
+## Review of the current change
+
+    memex discussion locate "$(git rev-parse HEAD)"
+
+prints the change RECORD. Its `id` is CHANGE for the other commands:
+
+    memex discussion threads CHANGE
+    memex discussion series CHANGE
+
+Open threads:
+
+    memex discussion threads CHANGE |
+      jq -c 'select(.data.resolved == false)'
+
+Each thread's `data.anchor` says what it is about; its line numbers are
+those of `data.revision`. When that isn't the change's `data.current`,
+the lines may have moved: say so.
+
+## The comment at the cursor
+
+With an editor registered in hunch, take its file and line from
+`hunch-editor context`, make the file relative to the repository root,
+and keep the threads whose anchor covers it:
+
+    memex discussion threads CHANGE | jq -c --arg path "$PATH_IN_REPO" \
+      --argjson line "$LINE" 'select(.data.anchor.on == "lines"
+        and .data.anchor.path == $path
+        and .data.anchor.start <= $line and $line <= .data.anchor.end)'
+
+## Writing
+
+`publish`, `comment`, `transition` and `retest` reach other people. Run
+them only when the user asks for that exact action. Write replies as
+drafts, with `draft`, and let the user publish them.
