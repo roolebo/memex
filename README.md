@@ -54,6 +54,14 @@ Editors:
 
 - [vim-memex]: review threads in the quickfix list and after their lines
 
+## Related
+
+- [hunch]: the human, their editor and agents working together
+- [withkeys]: API keys from pass for the commands that need them
+
+[hunch]: https://github.com/roolebo/hunch
+[withkeys]: https://github.com/roolebo/withkeys
+
 [memex-gerrit]: https://github.com/roolebo/memex-gerrit
 [memex-github]: https://github.com/roolebo/memex-github
 [memex-jira]: https://github.com/roolebo/memex-jira
