@@ -41,8 +41,8 @@ The review threads of the change at HEAD:
 Adapters:
 
 - [memex-gerrit]: discussion in Gerrit
-- [memex-github]: discussion in GitHub pull requests, tracker in issues;
-  ci in Actions is planned
+- [memex-github]: discussion in GitHub pull requests, tracker in issues,
+  ci in Actions
 - [memex-jira]: tracker in JIRA
 - [memex-jenkins]: ci in Jenkins
 - [memex-maloo]: ci in Maloo
