@@ -8,8 +8,9 @@
 #
 # Bindings come from, per role, the first of: $GIT_DIR/memex/bindings,
 # ${XDG_CONFIG_HOME:-~/.config}/memex/bindings for a matching remote, and
-# .memex in the working copy. Nothing is guessed. A command runs once per binding of the role; their RECORDs are
-# printed one after another. Never prompts.
+# .memex in the working copy. Nothing is guessed. A command runs once per
+# binding of the role; their RECORDs are printed one after another. Never
+# prompts.
 #
 
 set -e
