@@ -47,8 +47,26 @@ and keep the threads whose anchor covers it:
         and .data.anchor.path == $path
         and .data.anchor.start <= $line and $line <= .data.anchor.end)'
 
+## Drafts
+
+Reply to a thread, the id being one of its comments':
+
+    jq -nc --arg to ID --arg text "$TEXT" '{reply_to: $to, text: $text}' |
+      memex discussion draft CHANGE
+
+A new thread on lines of a revision:
+
+    jq -nc --arg text "$TEXT" '{anchor: {on: "lines", path: PATH,
+      side: "revision", start: 10, end: 12}, revision: "15", text: $text}' |
+      memex discussion draft CHANGE
+
+Add `resolved: true` to mark the thread done. Then:
+
+    memex discussion drafts CHANGE        the user's drafts
+    memex discussion discard CHANGE ID    delete one
+
 ## Writing
 
 `publish`, `comment`, `transition` and `retest` reach other people. Run
 them only when the user asks for that exact action. Write replies as
-drafts, with `draft`, and let the user publish them.
+drafts and let the user publish them.
