@@ -1,5 +1,10 @@
 # memex
 
+<img src="memex.jpg" alt="A reconstruction of the Memex desk" width="400">
+
+<sub>A Memex reconstruction at the Deutsches Technikmuseum, Berlin. Photo:
+[Bunyk][2], [CC BY 4.0][3], resized.</sub>
+
 memex brings a project's code, review discussions, bugs and CI results
 into one format, so that small tools can process them in a pipeline and an
 editor or an agent can show them. The name comes from Vannevar Bush's
@@ -18,3 +23,5 @@ adapters. [discussion.md](discussion.md), [tracker.md](tracker.md) and
 [ci.md](ci.md) specify the roles.
 
 [1]: https://www.theatlantic.com/magazine/archive/1945/07/as-we-may-think/303881/
+[2]: https://commons.wikimedia.org/wiki/File:Memex_at_Das_Netz_exhibition_of_Deutsches_Technikmuseum.jpg
+[3]: https://creativecommons.org/licenses/by/4.0/
