@@ -22,12 +22,25 @@ die() {
   exit 1
 }
 
+SPECS=$(dirname "$(realpath "${BASH_SOURCE[0]}")")/skills/memex
+
 usage() {
   cat << EOF
-Usage: $0 bindings
-       $0 review [CHANGE]
-       $0 history [CHANGE]
-       $0 ROLE COMMAND [ARGUMENTS]
+Usage: $0 COMMAND [ARGUMENTS], in a working copy
+
+  bindings                  what each role is bound to
+  review [CHANGE]           a change and its review threads
+  history [CHANGE]          every version of a change, uploaded or local,
+                            newest first
+  ROLE COMMAND [ARGUMENTS]  a command of ROLE: discussion, tracker, ci or
+                            code
+
+CHANGE defaults to the change of HEAD. A COMMIT may be any git revision,
+and defaults to HEAD. Output is RECORDs, one JSON object per line. Exit
+status 2: the bound adapter lacks the command.
+
+PROTOCOL.md specifies the RECORDs, ROLE.md each role's commands, in
+  $SPECS
 EOF
 }
 

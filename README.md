@@ -31,22 +31,12 @@ composed around the records the adapters produce.
 
 ## Usage
 
-In a working copy:
+In a working copy, `memex --help` lists the commands; the role
+specifications above list each role's. For the change at HEAD:
 
-    memex bindings                  what each role is bound to
-    memex review [CHANGE]           a change and its review threads
-    memex history [CHANGE]          every version of a change, uploaded or
-                                    local, newest first
-    memex ROLE COMMAND [ARGUMENTS]  run a role's command
+    memex review | jq -c 'select(.data.resolved == false)'
 
-For the change at HEAD:
-
-    memex review                    the change and its threads
-    memex history                   its versions
-    memex ci runs                   its builds and tests
-    memex tracker issue ISSUE       an issue it fixes
-
-A COMMIT may be any git revision, and is HEAD when left out.
+prints its open review threads.
 
 [protocol]: skills/memex/PROTOCOL.md
 [discussion.md]: skills/memex/discussion.md

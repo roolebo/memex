@@ -8,18 +8,9 @@ description: Read the review threads, CI results and issues of the change
 
 # memex
 
-`memex` runs the adapters bound to a role for the working copy in the
-current directory. It prints RECORDs, one JSON object per line.
-PROTOCOL.md, next to this file, specifies them; each role has its own
-file next to it.
-
-    memex bindings                  what each role is bound to
-    memex review [CHANGE]           a change and its review threads
-    memex history [CHANGE]          every version of a change, uploaded or
-                                    local, newest first
-    memex ROLE COMMAND [ARGUMENTS]  run a role's command
-
-Exit status 2: the adapter doesn't support the command.
+`memex --help` lists the commands. PROTOCOL.md, next to this file,
+specifies the RECORDs they print; each role's file next to it, its
+commands and fields.
 
 ## Review of the current change
 
@@ -31,9 +22,6 @@ CHANGE for the other commands, e.g. `memex discussion series CHANGE`.
 Open threads:
 
     memex review | jq -c 'select(.data.resolved == false)'
-
-A COMMIT may be any git revision and is HEAD when left out:
-`memex ci runs`, `memex ci runs HEAD~1`.
 
 Each thread's `data.anchor` says what it is about; its line numbers are
 those of `data.revision`. When that isn't the change's `data.current`,
