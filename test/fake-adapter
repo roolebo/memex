@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# fake-adapter: an adapter for the tests. Prints one JSON object with its
+# name, arguments and stdin, then exits as its name says: 1 for a name
+# ending in -fail, 2 for -unsupported, else 0.
+#
+
+NAME=$(basename "$0")
+jq -nc --arg name "$NAME" --arg stdin "$(cat)" \
+  '{name: $name, args: $ARGS.positional, stdin: $stdin}' --args "$@"
+case $NAME in
+  *-fail) exit 1 ;;
+  *-unsupported*) exit 2 ;;
+esac

@@ -1,0 +1,324 @@
+#!/usr/bin/env bash
+#
+# test/run: tests of the memex command, offline.
+#
+# Each test gets its own git repository with remotes, HOME and
+# XDG_CONFIG_HOME, all under a temporary directory. Adapters are fakes
+# from test/fake-adapter, named memex-fake-*.
+#
+
+set -e
+
+CURDIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+MEMEX=$(dirname "$CURDIR")/memex
+REMOTE=https://git.example.org/project.git
+DIR=$(mktemp -d)
+FAILED=0
+
+die() {
+  echo "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat << EOF
+Usage: $0 [TEST...]
+
+Runs the given tests, or all of them:
+$(declare -F | cut -d' ' -f3 | grep '^test_' | sed 's/^/  /')
+EOF
+}
+
+cleanup() {
+  rm -rf "$DIR"
+}
+
+# Run memex ARGS in the test's repository with stdin from IN; sets OUT,
+# ERR and STATUS
+call() {
+  STATUS=0
+  (cd "$REPO" && "$MEMEX" "$@") < "$IN" > "$TEST_DIR/out" \
+    2> "$TEST_DIR/err" || STATUS=$?
+  OUT=$(< "$TEST_DIR/out")
+  ERR=$(< "$TEST_DIR/err")
+}
+
+# The names of the adapters that ran, and their arguments, one per line
+ran() {
+  jq -r '[.name] + .args | join(" ")' <<< "$OUT"
+}
+
+check() {
+  [ "$2" == "$3" ] && return
+  echo "# $1: expected '$3', got '$2'"
+  FAILED=$((FAILED + 1))
+}
+
+check_has() {
+  [[ $2 == *"$3"* ]] && return
+  echo "# $1: '$2' lacks '$3'"
+  FAILED=$((FAILED + 1))
+}
+
+test_project() {
+  echo 'discussion memex-fake-a https://review.example.org' > "$REPO/.memex"
+  call discussion threads 1234
+  check status "$STATUS" 0
+  check ran "$(ran)" \
+    'memex-fake-a https://review.example.org discussion threads 1234'
+}
+
+test_subdirectory() {
+  echo 'discussion memex-fake-a https://review.example.org' > "$REPO/.memex"
+  mkdir "$REPO/sub"
+  REPO=$REPO/sub
+  call discussion threads 1234
+  check status "$STATUS" 0
+  check_has ran "$(ran)" memex-fake-a
+}
+
+test_comments_and_blank_lines() {
+  cat > "$REPO/.memex" << EOF
+# The project's
+
+  # indented
+discussion memex-fake-a https://review.example.org
+
+EOF
+  call discussion threads 1
+  check status "$STATUS" 0
+  check ran "$(ran)" \
+    'memex-fake-a https://review.example.org discussion threads 1'
+}
+
+test_user_over_project() {
+  echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
+  echo 'tracker memex-fake-a https://jira.example.org' >> "$REPO/.memex"
+  echo "$REMOTE discussion memex-fake-b https://b.example.org" \
+    > "$XDG_CONFIG_HOME/memex/bindings"
+  call discussion threads 1
+  check discussion "$(ran)" \
+    'memex-fake-b https://b.example.org discussion threads 1'
+  call tracker issue X-1
+  check tracker "$(ran)" \
+    'memex-fake-a https://jira.example.org tracker issue X-1'
+}
+
+test_user_config_in_home() {
+  unset XDG_CONFIG_HOME
+  mkdir -p "$HOME/.config/memex"
+  echo "$REMOTE discussion memex-fake-b https://b.example.org" \
+    > "$HOME/.config/memex/bindings"
+  call discussion threads 1
+  check ran "$(ran)" 'memex-fake-b https://b.example.org discussion threads 1'
+}
+
+# Any of REPO's remotes matches, not only origin
+test_user_other_remote() {
+  echo "https://mirror.example.org/project.git discussion memex-fake-b" \
+    "https://b.example.org" > "$XDG_CONFIG_HOME/memex/bindings"
+  call discussion threads 1
+  check ran "$(ran)" 'memex-fake-b https://b.example.org discussion threads 1'
+}
+
+test_user_remote_not_matching() {
+  echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
+  echo "https://other.example.org/x.git discussion memex-fake-b x" \
+    > "$XDG_CONFIG_HOME/memex/bindings"
+  call discussion threads 1
+  check ran "$(ran)" 'memex-fake-a https://a.example.org discussion threads 1'
+}
+
+# A line for another remote before the matching one
+test_user_remote_not_matching_first() {
+  cat > "$XDG_CONFIG_HOME/memex/bindings" << EOF
+# comment
+
+https://other.example.org/x.git discussion memex-fake-a x
+$REMOTE discussion memex-fake-b https://b.example.org
+EOF
+  call discussion threads 1
+  check status "$STATUS" 0
+  check ran "$(ran)" 'memex-fake-b https://b.example.org discussion threads 1'
+}
+
+test_git_dir_over_user() {
+  echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
+  echo "$REMOTE discussion memex-fake-b https://b.example.org" \
+    > "$XDG_CONFIG_HOME/memex/bindings"
+  mkdir "$REPO/.git/memex"
+  cat > "$REPO/.git/memex/bindings" << EOF
+# mine
+
+discussion memex-fake-c https://c.example.org
+EOF
+  call discussion threads 1
+  check ran "$(ran)" 'memex-fake-c https://c.example.org discussion threads 1'
+}
+
+test_off() {
+  echo 'tracker memex-fake-a https://jira.example.org' > "$REPO/.memex"
+  echo "$REMOTE tracker -" > "$XDG_CONFIG_HOME/memex/bindings"
+  call tracker issue X-1
+  check status "$STATUS" 1
+  check out "$OUT" ''
+  check_has err "$ERR" 'No tracker binding'
+}
+
+test_no_binding() {
+  call discussion threads 1
+  check status "$STATUS" 1
+  check err "$ERR" "No discussion binding for $REPO"
+}
+
+test_not_a_working_copy() {
+  REPO=$TEST_DIR
+  call discussion threads 1
+  check status "$STATUS" 1
+  check_has err "$ERR" 'Not in a git working copy'
+}
+
+test_stdin_with_one_binding() {
+  echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
+  echo '{"text": "hi"}' > "$IN"
+  call discussion draft 1
+  check stdin "$(jq -r .stdin <<< "$OUT")" '{"text": "hi"}'
+}
+
+test_one_binding_status() {
+  echo 'discussion memex-fake-unsupported x' > "$REPO/.memex"
+  call discussion series 1
+  check unsupported "$STATUS" 2
+  echo 'discussion memex-fake-fail x' > "$REPO/.memex"
+  call discussion series 1
+  check failed "$STATUS" 1
+}
+
+# Each runs, with no stdin
+test_several_bindings() {
+  cat > "$REPO/.memex" << EOF
+discussion memex-fake-a https://a.example.org
+discussion memex-fake-b https://b.example.org
+EOF
+  echo '{"text": "hi"}' > "$IN"
+  call discussion draft 1
+  check status "$STATUS" 0
+  check ran "$(ran)" "$(printf '%s\n' \
+    'memex-fake-a https://a.example.org discussion draft 1' \
+    'memex-fake-b https://b.example.org discussion draft 1')"
+  check stdin "$(jq -r .stdin <<< "$OUT" | paste -sd '|' -)" '|'
+}
+
+test_several_one_succeeds() {
+  printf 'ci memex-fake-fail x\nci memex-fake-a y\n' > "$REPO/.memex"
+  call ci runs 1
+  check status "$STATUS" 0
+  printf 'ci memex-fake-unsupported x\nci memex-fake-a y\n' > "$REPO/.memex"
+  call ci runs 1
+  check unsupported "$STATUS" 0
+}
+
+test_several_all_unsupported() {
+  printf 'ci memex-fake-unsupported x\nci memex-fake-unsupported2 y\n' \
+    > "$REPO/.memex"
+  call ci runs 1
+  check status "$STATUS" 2
+  check ran "$(ran | wc -l | tr -d ' ')" 2
+}
+
+test_several_failed() {
+  printf 'ci memex-fake-unsupported x\nci memex-fake-fail y\n' \
+    > "$REPO/.memex"
+  call ci runs 1
+  check status "$STATUS" 1
+}
+
+test_bindings() {
+  cat > "$REPO/.memex" << EOF
+discussion memex-fake-a https://a.example.org
+tracker memex-fake-a https://jira.example.org
+ci memex-fake-a https://ci.example.org
+ci memex-fake-b https://test.example.org
+EOF
+  echo "$REMOTE tracker -" > "$XDG_CONFIG_HOME/memex/bindings"
+  mkdir "$REPO/.git/memex"
+  echo 'discussion memex-fake-c https://c.example.org' \
+    > "$REPO/.git/memex/bindings"
+  call bindings
+  check status "$STATUS" 0
+  # A role turned off has no ADDR
+  check out "$(sed 's/ *$//' <<< "$OUT")" "$(printf '%s\n' \
+    'discussion memex-fake-c https://c.example.org' \
+    'tracker -' \
+    'ci memex-fake-a https://ci.example.org' \
+    'ci memex-fake-b https://test.example.org')"
+}
+
+# A line for another remote after the matching one
+test_bindings_remote_not_matching() {
+  cat > "$XDG_CONFIG_HOME/memex/bindings" << EOF
+$REMOTE discussion memex-fake-b https://b.example.org
+https://other.example.org/x.git discussion memex-fake-a x
+EOF
+  call bindings
+  check status "$STATUS" 0
+  check out "$OUT" 'discussion memex-fake-b https://b.example.org'
+}
+
+test_bindings_none() {
+  call bindings
+  check status "$STATUS" 0
+  check out "$OUT" ''
+}
+
+test_usage() {
+  call discussion
+  check status "$STATUS" 1
+  check_has err "$ERR" Usage
+}
+
+run() {
+  local failed=$FAILED
+  TEST=$1
+  TEST_DIR=$DIR/$1
+  REPO=$TEST_DIR/repo
+  IN=$TEST_DIR/in
+  mkdir -p "$TEST_DIR/home" "$TEST_DIR/config/memex"
+  : > "$IN"
+  git init -q "$REPO"
+  git -C "$REPO" remote add origin "$REMOTE"
+  git -C "$REPO" remote add mirror https://mirror.example.org/project.git
+  (
+    export HOME=$TEST_DIR/home
+    export XDG_CONFIG_HOME=$TEST_DIR/config
+    "$1"
+    exit $((FAILED - failed))
+  ) || FAILED=$((FAILED + $?))
+  if [ $FAILED -eq $failed ]; then
+    echo "ok $1"
+  else
+    echo "not ok $1"
+  fi
+}
+
+if [ "$1" == "-h" -o "$1" == "--help" ]; then
+  usage
+  exit 0
+fi
+command -v jq > /dev/null || die "jq is not installed"
+trap cleanup EXIT
+mkdir "$DIR/bin"
+for name in a b c fail unsupported unsupported2; do
+  ln -s "$CURDIR/fake-adapter" "$DIR/bin/memex-fake-$name"
+done
+export PATH=$DIR/bin:$PATH
+# The user's git config doesn't apply
+export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null
+
+TESTS=("$@")
+[ $# -gt 0 ] || TESTS=($(declare -F | cut -d' ' -f3 | grep '^test_'))
+for test in "${TESTS[@]}"; do
+  declare -F "$test" > /dev/null || die "No such test: $test"
+  run "$test"
+done
+[ $FAILED -eq 0 ] || die "$FAILED failed"

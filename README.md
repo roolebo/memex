@@ -36,6 +36,8 @@ The review threads of the change at HEAD:
 
 [skills/memex](skills/memex/SKILL.md) teaches an agent the same.
 
+Tests run offline, with fake adapters: `test/run [TEST...]`.
+
 ## Integrations
 
 Adapters:
