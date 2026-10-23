@@ -63,12 +63,12 @@ What memex can do with each service:
 | Read and search issues |  ✓   |   ✓    |
 | Comment, change status |  ✓   |   ✓    |
 
-| CI                                      | Jenkins | Maloo | Actions |
-| --------------------------------------- | :-----: | :---: | :-----: |
-| Find the runs of a commit, their suites |    ✓    |   ✓   |    ✓    |
-| Results of each test                    |    ✓    |   ✓   |         |
-| Logs                                    |    ✓    |       |    ✓    |
-| Run again                               |    ✓    |   ✓   |    ✓    |
+| CI                                      | Jenkins | Maloo | GitHub |
+| --------------------------------------- | :-----: | :---: | :----: |
+| Find the runs of a commit, their suites |    ✓    |   ✓   |   ✓    |
+| Results of each test                    |    ✓    |   ✓   |        |
+| Logs                                    |    ✓    |       |   ✓    |
+| Run again                               |    ✓    |   ✓   |   ✓    |
 
 Adapters: [memex-gerrit], [memex-github], [memex-jira], [memex-jenkins],
 [memex-maloo].
