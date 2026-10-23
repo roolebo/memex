@@ -25,15 +25,16 @@ Terms:
 - `discussion`: changes under review, their revisions, threads and votes.
   Specified in [discussion.md](discussion.md).
 - `tracker`: issues, their state and comments.
-- `ci`: test runs, their results and logs.
+- `ci`: test runs, their results and logs. Specified in [ci.md](ci.md).
 
 One service may serve several roles; each role has its own adapter. GitHub
 serving code, discussion and tracker for a project takes three adapters.
 
 ## Bindings
 
-A project has at most one binding per role, except `discussion`, which may
-have several: a project may review both in Gerrit and on a mailing list.
+A project has at most one binding per role, except `discussion` and `ci`,
+which may have several: a project may review both in Gerrit and on a
+mailing list, and build in one CI system and test in another.
 
 A project may keep its bindings in `.memex`, but needs none: the user's
 bindings and detection work without it. For each role, the first of these

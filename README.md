@@ -14,6 +14,7 @@ assume any combination. A project binds each role to an adapter in its
 Tools are composed around the records the adapters produce.
 
 [PROTOCOL.md](PROTOCOL.md) specifies the roles, bindings, records and
-adapters. [discussion.md](discussion.md) specifies the discussion role.
+adapters. [discussion.md](discussion.md) and [ci.md](ci.md) specify the
+discussion and ci roles.
 
 [1]: https://www.theatlantic.com/magazine/archive/1945/07/as-we-may-think/303881/
