@@ -43,7 +43,9 @@ user_bindings() {
   [ -f "$CONFIG" ] || return 0
   remotes=$(git -C "$REPO" remote -v | cut -f2 | cut -d' ' -f1 | sort -u)
   read_bindings "$CONFIG" | while read -r remote rest; do
-    grep -qxF "$remote" <<< "$remotes" && echo "$rest"
+    if grep -qxF "$remote" <<< "$remotes"; then
+      echo "$rest"
+    fi
   done
 }
 
