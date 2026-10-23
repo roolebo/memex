@@ -21,7 +21,8 @@ Terms:
 
 ## Roles
 
-- `code`: the repository, its branches and commits.
+- `code`: the repository, its workspaces and what the server has.
+  Specified in [code.md](code.md).
 - `discussion`: changes under review, their revisions, threads and votes.
   Specified in [discussion.md](discussion.md).
 - `tracker`: issues, their state and comments. Specified in

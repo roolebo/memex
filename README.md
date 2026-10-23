@@ -27,7 +27,7 @@ composed around the records the adapters produce.
 | discussion | changes under review, threads, votes      | [discussion.md] |
 | tracker    | issues, their status and comments         | [tracker.md]    |
 | ci         | builds and test runs, results, logs       | [ci.md]         |
-| code       | the repository, branches, commits         | not yet         |
+| code       | commits, workspaces, the server           | [code.md]       |
 
 ## Usage
 
@@ -46,6 +46,7 @@ For the change at HEAD:
 [discussion.md]: discussion.md
 [tracker.md]: tracker.md
 [ci.md]: ci.md
+[code.md]: code.md
 
 [skills/memex](skills/memex/SKILL.md) teaches an agent the same.
 
