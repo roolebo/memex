@@ -87,6 +87,41 @@ test_history_without_code() {
     '2 bbbb2222 server' '1 aaaa1111 server')"
 }
 
+test_review() {
+  echo 'discussion memex-fake-history https://review.example.org' \
+    > "$REPO/.memex"
+  call review 1234
+  check status "$STATUS" 0
+  check kinds "$(jq -r '"\(.kind) \(.id)"' <<< "$OUT")" \
+    "$(printf '%s\n' 'change 1234' 'thread t1')"
+}
+
+# Without CHANGE, the change of HEAD
+test_review_head() {
+  echo 'discussion memex-fake-history https://review.example.org' \
+    > "$REPO/.memex"
+  git -C "$REPO" commit -q --allow-empty -m one
+  call review
+  check status "$STATUS" 0
+  check kinds "$(jq -r .kind <<< "$OUT" | tr '\n' ' ')" 'change thread '
+}
+
+# A COMMIT may be a git revision, HEAD when left out
+test_commit_head() {
+  echo 'ci memex-fake-a https://ci.example.org' > "$REPO/.memex"
+  git -C "$REPO" commit -q --allow-empty -m one
+  git -C "$REPO" commit -q --allow-empty -m two
+  local head
+  head=$(git -C "$REPO" rev-parse HEAD)
+  call ci runs
+  check default "$(ran)" "memex-fake-a https://ci.example.org ci runs $head"
+  call ci runs HEAD~1
+  head=$(git -C "$REPO" rev-parse HEAD~1)
+  check revision "$(ran)" "memex-fake-a https://ci.example.org ci runs $head"
+  call ci runs 0123abcd
+  check other "$(ran)" 'memex-fake-a https://ci.example.org ci runs 0123abcd'
+}
+
 test_project() {
   echo 'discussion memex-fake-a https://review.example.org' > "$REPO/.memex"
   call discussion threads 1234
@@ -313,6 +348,8 @@ run() {
   mkdir -p "$TEST_DIR/home" "$TEST_DIR/config/memex"
   : > "$IN"
   git init -q "$REPO"
+  git -C "$REPO" config user.name Test
+  git -C "$REPO" config user.email test@example.org
   git -C "$REPO" remote add origin "$REMOTE"
   git -C "$REPO" remote add mirror https://mirror.example.org/project.git
   (

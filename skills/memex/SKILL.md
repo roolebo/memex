@@ -14,6 +14,7 @@ PROTOCOL.md, next to this file, specifies them; each role has its own
 file next to it.
 
     memex bindings                  what each role is bound to
+    memex review [CHANGE]           a change and its review threads
     memex history [CHANGE]          every version of a change, uploaded or
                                     local, newest first
     memex ROLE COMMAND [ARGUMENTS]  run a role's command
@@ -22,17 +23,17 @@ Exit status 2: the adapter doesn't support the command.
 
 ## Review of the current change
 
-    memex discussion locate "$(git rev-parse HEAD)"
+    memex review
 
-prints the change RECORD. Its `id` is CHANGE for the other commands:
-
-    memex discussion threads CHANGE
-    memex discussion series CHANGE
+prints the change RECORD of HEAD, then its threads. The change's `id` is
+CHANGE for the other commands, e.g. `memex discussion series CHANGE`.
 
 Open threads:
 
-    memex discussion threads CHANGE |
-      jq -c 'select(.data.resolved == false)'
+    memex review | jq -c 'select(.data.resolved == false)'
+
+A COMMIT may be any git revision and is HEAD when left out:
+`memex ci runs`, `memex ci runs HEAD~1`.
 
 Each thread's `data.anchor` says what it is about; its line numbers are
 those of `data.revision`. When that isn't the change's `data.current`,

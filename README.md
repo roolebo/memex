@@ -34,16 +34,19 @@ composed around the records the adapters produce.
 In a working copy:
 
     memex bindings                  what each role is bound to
+    memex review [CHANGE]           a change and its review threads
     memex history [CHANGE]          every version of a change, uploaded or
                                     local, newest first
     memex ROLE COMMAND [ARGUMENTS]  run a role's command
 
 For the change at HEAD:
 
-    memex discussion locate "$(git rev-parse HEAD)"   the review
-    memex discussion threads CHANGE                   its threads
-    memex ci runs "$(git rev-parse HEAD)"             its builds and tests
-    memex tracker issue ISSUE                         an issue it fixes
+    memex review                    the change and its threads
+    memex history                   its versions
+    memex ci runs                   its builds and tests
+    memex tracker issue ISSUE       an issue it fixes
+
+A COMMIT may be any git revision, and is HEAD when left out.
 
 [protocol]: skills/memex/PROTOCOL.md
 [discussion.md]: skills/memex/discussion.md

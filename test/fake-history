@@ -27,6 +27,21 @@ case "$2 $3" in
 }
 JSON
     ;;
+  "discussion threads")
+    jq -c . << 'JSON'
+{
+  "id": "t1",
+  "source": "https://review.example.org",
+  "role": "discussion",
+  "kind": "thread",
+  "basis": "2:t1",
+  "links": [["change", "1234"]],
+  "data": {"anchor": {"on": "change"}, "revision": "2", "resolved": false,
+           "comments": []},
+  "notes": {}
+}
+JSON
+    ;;
   "code versions")
     jq -c . << 'JSON'
 {

@@ -4,6 +4,7 @@
 # directory.
 #
 #   memex bindings
+#   memex review [CHANGE]
 #   memex history [CHANGE]
 #   memex ROLE COMMAND [ARGUMENTS]
 #
@@ -24,6 +25,7 @@ die() {
 usage() {
   cat << EOF
 Usage: $0 bindings
+       $0 review [CHANGE]
        $0 history [CHANGE]
        $0 ROLE COMMAND [ARGUMENTS]
 EOF
@@ -112,6 +114,24 @@ REPO=$(git rev-parse --show-toplevel 2> /dev/null) ||
   die "Not in a git working copy: $PWD"
 GIT_DIR=$(git rev-parse --absolute-git-dir)
 
+# Prints the change RECORD of CHANGE, or of HEAD's change
+change() {
+  if [ -n "$1" ]; then
+    "$0" discussion change "$1"
+  else
+    "$0" discussion locate "$(git rev-parse HEAD)"
+  fi
+}
+
+# Prints the change RECORD of CHANGE, or of HEAD's change, then its thread
+# RECORDs
+review() {
+  local record
+  record=$(change "$1") || exit 1
+  printf '%s\n' "$record"
+  "$0" discussion threads "$(jq -r .id <<< "$record")"
+}
+
 # Prints a version RECORD for each version of CHANGE, or of HEAD's change,
 # newest first: its revisions on the review, and its commits that are
 # only in workspaces or upstream. Without a code binding, the revisions.
@@ -119,11 +139,7 @@ history() {
   local change
   local id
   local versions='[]'
-  if [ -n "$1" ]; then
-    change=$("$0" discussion change "$1") || exit 1
-  else
-    change=$("$0" discussion locate "$(git rev-parse HEAD)") || exit 1
-  fi
+  change=$(change "$1") || exit 1
   id=$(jq -r '[.links[] | select(.[0] == "change-id") | .[1]][0] // empty' \
     <<< "$change")
   if [ -n "$id" -a -n "$(bindings code)" ]; then
@@ -157,10 +173,25 @@ history() {
     ' <<< "$change"
 }
 
+if [ "$1" == review -a $# -le 2 ]; then
+  review "$2"
+  exit
+fi
 if [ "$1" == history -a $# -le 2 ]; then
   history "$2"
   exit 0
 fi
+# A COMMIT may be any git revision, and defaults to HEAD
+case "$1 $2" in
+  "discussion locate" | "ci runs" | "code diff")
+    if [ $# -eq 2 ]; then
+      set -- "$1" "$2" HEAD
+    fi
+    if commit=$(git rev-parse -q --verify "$3^{commit}"); then
+      set -- "$1" "$2" "$commit" "${@:4}"
+    fi
+    ;;
+esac
 if [ "$1" == bindings -a $# -eq 1 ]; then
   for role in code discussion tracker ci; do
     bindings "$role" | sed "s/^/$role /"
