@@ -18,9 +18,16 @@ assume any combination. A project binds each role to an adapter in its
 `.memex`, and a user may override that in their own config. Tools are
 composed around the records the adapters produce.
 
-[PROTOCOL.md](PROTOCOL.md) specifies the roles, bindings, records and
-adapters. [discussion.md](discussion.md), [tracker.md](tracker.md) and
-[ci.md](ci.md) specify the roles.
+[PROTOCOL.md](PROTOCOL.md) specifies the bindings, records and adapters.
+
+## Roles
+
+| Role       | What it holds                             | Spec            |
+| ---------- | ----------------------------------------- | --------------- |
+| discussion | changes under review, threads, votes      | [discussion.md] |
+| tracker    | issues, their status and comments         | [tracker.md]    |
+| ci         | builds and test runs, results, logs       | [ci.md]         |
+| code       | the repository, branches, commits         | not yet         |
 
 ## Usage
 
@@ -29,10 +36,16 @@ In a working copy:
     memex bindings                  what each role is bound to
     memex ROLE COMMAND [ARGUMENTS]  run a role's command
 
-The review threads of the change at HEAD:
+For the change at HEAD:
 
-    memex discussion locate "$(git rev-parse HEAD)"
-    memex discussion threads CHANGE
+    memex discussion locate "$(git rev-parse HEAD)"   the review
+    memex discussion threads CHANGE                   its threads
+    memex ci runs "$(git rev-parse HEAD)"             its builds and tests
+    memex tracker issue ISSUE                         an issue it fixes
+
+[discussion.md]: discussion.md
+[tracker.md]: tracker.md
+[ci.md]: ci.md
 
 [skills/memex](skills/memex/SKILL.md) teaches an agent the same.
 
