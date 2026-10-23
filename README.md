@@ -18,7 +18,7 @@ assume any combination. A project binds each role to an adapter in its
 `.memex`, and a user may override that in their own config. Tools are
 composed around the records the adapters produce.
 
-[PROTOCOL.md](PROTOCOL.md) specifies the bindings, records and adapters.
+[PROTOCOL.md][protocol] specifies the bindings, records and adapters.
 
 ## Roles
 
@@ -43,10 +43,11 @@ For the change at HEAD:
     memex ci runs "$(git rev-parse HEAD)"             its builds and tests
     memex tracker issue ISSUE                         an issue it fixes
 
-[discussion.md]: discussion.md
-[tracker.md]: tracker.md
-[ci.md]: ci.md
-[code.md]: code.md
+[protocol]: skills/memex/PROTOCOL.md
+[discussion.md]: skills/memex/discussion.md
+[tracker.md]: skills/memex/tracker.md
+[ci.md]: skills/memex/ci.md
+[code.md]: skills/memex/code.md
 
 [skills/memex](skills/memex/SKILL.md) teaches an agent the same.
 

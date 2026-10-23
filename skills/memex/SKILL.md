@@ -9,9 +9,9 @@ description: Read the review threads, CI results and issues of the change
 # memex
 
 `memex` runs the adapters bound to a role for the working copy in the
-current directory. It prints RECORDs, one JSON object per line. The
-protocol is in PROTOCOL.md at the root of the memex repository, two
-levels above this file; each role has its own file next to it.
+current directory. It prints RECORDs, one JSON object per line.
+PROTOCOL.md, next to this file, specifies them; each role has its own
+file next to it.
 
     memex bindings                  what each role is bound to
     memex ROLE COMMAND [ARGUMENTS]  run a role's command
