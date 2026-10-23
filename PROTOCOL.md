@@ -24,7 +24,8 @@ Terms:
 - `code`: the repository, its branches and commits.
 - `discussion`: changes under review, their revisions, threads and votes.
   Specified in [discussion.md](discussion.md).
-- `tracker`: issues, their state and comments.
+- `tracker`: issues, their state and comments. Specified in
+  [tracker.md](tracker.md).
 - `ci`: test runs, their results and logs. Specified in [ci.md](ci.md).
 
 One service may serve several roles; each role has its own adapter. GitHub
