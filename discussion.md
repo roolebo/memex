@@ -117,7 +117,8 @@ An ANCHOR is one of:
 PATH is relative to the root of the repository. SIDE is `base`, the
 REVISION's parent, or `revision`. LINE counts from 1; `end` is included.
 `lines` may also have `start_col` and `end_col`, counting characters from
-1, `end_col` excluded.
+1, `end_col` excluded. `message` may have `start` and `end`, and columns,
+on lines of the commit message as the SOURCE numbers them.
 
 ```json
 {"id": "c9d8e7", "source": "https://review.example.org", "role": "discussion",
