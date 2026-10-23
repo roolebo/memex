@@ -40,12 +40,15 @@ The review threads of the change at HEAD:
 
 Adapters:
 
-- [memex-gerrit]: discussion in Gerrit; reads changes, series and
-  threads
-- [memex-github]: discussion in GitHub pull requests; specified
-- [memex-jira]: tracker in JIRA; specified
-- [memex-jenkins]: ci in Jenkins; specified
-- [memex-maloo]: ci in Maloo; specified
+- [memex-gerrit]: discussion in Gerrit
+- [memex-github]: discussion in GitHub pull requests; tracker in Issues
+  and ci in Actions are planned
+- [memex-jira]: tracker in JIRA
+- [memex-jenkins]: ci in Jenkins
+
+Planned:
+
+- [memex-maloo]: ci in Maloo
 
 Editors:
 
