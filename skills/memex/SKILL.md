@@ -14,6 +14,8 @@ PROTOCOL.md, next to this file, specifies them; each role has its own
 file next to it.
 
     memex bindings                  what each role is bound to
+    memex history [CHANGE]          every version of a change, uploaded or
+                                    local, newest first
     memex ROLE COMMAND [ARGUMENTS]  run a role's command
 
 Exit status 2: the adapter doesn't support the command.

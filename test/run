@@ -60,6 +60,33 @@ check_has() {
   FAILED=$((FAILED + 1))
 }
 
+# REVISION COMMIT WHERE of each version RECORD in OUT
+versions() {
+  jq -r '[.data.revision // "-", .data.commit, (.data.where | join(","))]
+    | join(" ")' <<< "$OUT"
+}
+
+test_history() {
+  printf '%s\n' 'discussion memex-fake-history https://review.example.org' \
+    'code memex-fake-history https://git.example.org' > "$REPO/.memex"
+  call history 1234
+  check versions "$(versions)" "$(printf '%s\n' \
+    '- cccc3333 /work/project' \
+    '2 bbbb2222 server,/work/project,topic' \
+    '1 aaaa1111 server')"
+  check status "$STATUS" 0
+  check current "$(jq -r 'select(.data.current) | .id' <<< "$OUT")" \
+    bbbb2222
+}
+
+test_history_without_code() {
+  echo 'discussion memex-fake-history https://review.example.org' \
+    > "$REPO/.memex"
+  call history 1234
+  check versions "$(versions)" "$(printf '%s\n' \
+    '2 bbbb2222 server' '1 aaaa1111 server')"
+}
+
 test_project() {
   echo 'discussion memex-fake-a https://review.example.org' > "$REPO/.memex"
   call discussion threads 1234
@@ -311,6 +338,7 @@ mkdir "$DIR/bin"
 for name in a b c fail unsupported unsupported2; do
   ln -s "$CURDIR/fake-adapter" "$DIR/bin/memex-fake-$name"
 done
+ln -s "$CURDIR/fake-history" "$DIR/bin/memex-fake-history"
 export PATH=$DIR/bin:$PATH
 # The user's git config doesn't apply
 export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null

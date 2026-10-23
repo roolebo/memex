@@ -125,6 +125,19 @@ Rules for STEPs:
 - A STEP that stores results keeps the `basis` they were computed from. A
   different `basis` makes them stale.
 
+## History
+
+`memex history [CHANGE]` joins the `discussion` and `code` roles: every
+version of CHANGE, or of HEAD's change, newest first. A version RECORD
+has `source` `memex`, `role` `history` and `kind` `version`. `data`:
+
+    revision    the REVISION's id, or null when only in the code
+    commit      the COMMIT
+    uploaded    true when the review has it
+    current     true for the change's current REVISION
+    where       `server` when uploaded, then the places the code role
+                found it: WORKSPACEs, branches, upstream
+
 ## Writing back
 
 An adapter writes to its SOURCE only as drafts: text only the human sees

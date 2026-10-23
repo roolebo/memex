@@ -34,6 +34,8 @@ composed around the records the adapters produce.
 In a working copy:
 
     memex bindings                  what each role is bound to
+    memex history [CHANGE]          every version of a change, uploaded or
+                                    local, newest first
     memex ROLE COMMAND [ARGUMENTS]  run a role's command
 
 For the change at HEAD:

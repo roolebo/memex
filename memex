@@ -4,6 +4,7 @@
 # directory.
 #
 #   memex bindings
+#   memex history [CHANGE]
 #   memex ROLE COMMAND [ARGUMENTS]
 #
 # Bindings come from, per role, the first of: $GIT_DIR/memex/bindings,
@@ -23,6 +24,7 @@ die() {
 usage() {
   cat << EOF
 Usage: $0 bindings
+       $0 history [CHANGE]
        $0 ROLE COMMAND [ARGUMENTS]
 EOF
 }
@@ -110,6 +112,55 @@ REPO=$(git rev-parse --show-toplevel 2> /dev/null) ||
   die "Not in a git working copy: $PWD"
 GIT_DIR=$(git rev-parse --absolute-git-dir)
 
+# Prints a version RECORD for each version of CHANGE, or of HEAD's change,
+# newest first: its revisions on the review, and its commits that are
+# only in workspaces or upstream. Without a code binding, the revisions.
+history() {
+  local change
+  local id
+  local versions='[]'
+  if [ -n "$1" ]; then
+    change=$("$0" discussion change "$1") || exit 1
+  else
+    change=$("$0" discussion locate "$(git rev-parse HEAD)") || exit 1
+  fi
+  id=$(jq -r '[.links[] | select(.[0] == "change-id") | .[1]][0] // empty' \
+    <<< "$change")
+  if [ -n "$id" -a -n "$(bindings code)" ]; then
+    versions=$("$0" code versions "$id" | jq -sc .) || exit 1
+  fi
+  jq -c --argjson versions "$versions" '
+    # Seconds since the epoch of an RFC 3339 time, with any offset
+    def epoch: (.[0:19] + "Z" | fromdateiso8601)
+      - (.[19:] | sub("^\\.[0-9]+"; "")
+        | if . == "Z" or . == "" then 0
+          else (.[0:1] + "1" | tonumber)
+            * ((.[1:3] | tonumber) * 3600 + (.[4:6] | tonumber) * 60) end);
+    . as $change
+    | ($versions | map({key: .data.commit, value: .}) | from_entries)
+      as $local
+    | [.data.revisions[] | . as $r | {
+        revision: .id, commit: .commit, time: .created,
+        current: (.id == $change.data.current),
+        where: (["server"] + (($local[$r.commit].data.where // [])
+          - ["server"]))}]
+    | . as $uploaded
+    | . + [$versions[] | select(.data.commit as $c
+        | $uploaded | all(.commit != $c)) | {
+        revision: null, commit: .data.commit, time: .data.committed,
+        current: false, where: .data.where}]
+    | sort_by(.time | epoch) | reverse[]
+    | {id: .commit, source: "memex", role: "history", kind: "version",
+       basis: (.where | join(",")),
+       links: [["change", $change.id], ["commit", .commit]],
+       data: (del(.time) + {uploaded: (.revision != null)}), notes: {}}
+    ' <<< "$change"
+}
+
+if [ "$1" == history -a $# -le 2 ]; then
+  history "$2"
+  exit 0
+fi
 if [ "$1" == bindings -a $# -eq 1 ]; then
   for role in code discussion tracker ci; do
     bindings "$role" | sed "s/^/$role /"

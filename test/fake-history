@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#
+# fake-history: an adapter for the history tests. Serves change 1234 with
+# two revisions, and its versions in the code: the second revision is
+# also in a workspace, and a newer commit is only local.
+#
+
+case "$2 $3" in
+  "discussion change" | "discussion locate")
+    jq -c . << 'JSON'
+{
+  "id": "1234",
+  "source": "https://review.example.org",
+  "role": "discussion",
+  "kind": "change",
+  "basis": "2",
+  "links": [["change", "1234"], ["change-id", "I8a1f"]],
+  "data": {
+    "title": "Fix the lock",
+    "current": "2",
+    "revisions": [
+      {"id": "1", "commit": "aaaa1111", "created": "2026-01-01T10:00:00Z"},
+      {"id": "2", "commit": "bbbb2222", "created": "2026-01-02T10:00:00Z"}
+    ]
+  },
+  "notes": {}
+}
+JSON
+    ;;
+  "code versions")
+    jq -c . << 'JSON'
+{
+  "id": "bbbb2222", "kind": "commit",
+  "data": {"commit": "bbbb2222", "committed": "2026-01-02T14:00:00+05:00",
+           "where": ["/work/project", "topic"]}
+}
+{
+  "id": "cccc3333", "kind": "commit",
+  "data": {"commit": "cccc3333", "committed": "2026-01-03T09:00:00+05:00",
+           "where": ["/work/project"]}
+}
+JSON
+    ;;
+  *)
+    exit 2
+    ;;
+esac
