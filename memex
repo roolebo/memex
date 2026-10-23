@@ -7,9 +7,8 @@
 #   memex ROLE COMMAND [ARGUMENTS]
 #
 # Bindings come from, per role, the first of: $GIT_DIR/memex/bindings,
-# ${XDG_CONFIG_HOME:-~/.config}/memex/bindings for a matching remote,
-# .memex in the working copy, and `detect` of every memex-* adapter on
-# PATH. A command runs once per binding of the role; their RECORDs are
+# ${XDG_CONFIG_HOME:-~/.config}/memex/bindings for a matching remote, and
+# .memex in the working copy. Nothing is guessed. A command runs once per binding of the role; their RECORDs are
 # printed one after another. Never prompts.
 #
 
@@ -48,30 +47,16 @@ user_bindings() {
   done
 }
 
-# Prints ROLE ADAPTER ADDR lines that adapters detect in REPO
-detected_bindings() {
-  local adapter
-  local role
-  local addr
-  for adapter in $(compgen -c memex- | sort -u); do
-    "$adapter" detect "$REPO" 2> /dev/null |
-      while read -r role addr; do
-        echo "$role $adapter $addr"
-      done
-  done
-}
-
 # Prints the ADAPTER ADDR lines bound to a role, from the first source
 # that binds it
 bindings() {
   local source
   local found
-  for source in git_dir user project detected; do
+  for source in git_dir user project; do
     case $source in
       git_dir) found=$(read_bindings "$GIT_DIR/memex/bindings") ;;
       user) found=$(user_bindings) ;;
       project) found=$(read_bindings "$REPO/.memex") ;;
-      detected) found=$(detected_bindings) ;;
     esac
     found=$(awk -v role="$1" '$1 == role { print $2, $3 }' <<< "$found")
     if [ -n "$found" ]; then

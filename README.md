@@ -15,8 +15,8 @@ Each project keeps these in its own combination of places: one reviews in
 Gerrit and tracks bugs in JIRA, QEMU hosts code and issues on GitLab
 and reviews on a mailing list, Linux reviews by mail. memex doesn't
 assume any combination. A project binds each role to an adapter in its
-`.memex`, the user binds it in their own config, or memex detects it.
-Tools are composed around the records the adapters produce.
+`.memex`, and a user may override that in their own config. Tools are
+composed around the records the adapters produce.
 
 [PROTOCOL.md](PROTOCOL.md) specifies the roles, bindings, records and
 adapters. [discussion.md](discussion.md), [tracker.md](tracker.md) and

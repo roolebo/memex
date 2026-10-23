@@ -37,20 +37,17 @@ A project has at most one binding per role, except `discussion` and `ci`,
 which may have several: a project may review both in Gerrit and on a
 mailing list, and build in one CI system and test in another.
 
-A project may keep its bindings in `.memex`, but needs none: the user's
-bindings and detection work without it. For each role, the first of these
-that binds it wins:
+A project keeps its bindings in `.memex`, under version control, so
+whoever clones it has them. A user may override them. For each role, the
+first of these that binds it wins:
 
 1. `$GIT_DIR/memex/bindings` in REPO: the user's, this working copy only.
 2. `${XDG_CONFIG_HOME:-~/.config}/memex/bindings`: the user's, every
    working copy with a matching remote.
-3. `.memex` at the root of REPO: the project's, under version control.
-4. Detection: each installed adapter is asked with `detect`, which looks
-   at what REPO already has, such as its remotes or a `.gitreview`.
+3. `.memex` at the root of REPO: the project's.
 
-No adapter or ADDR is built in; they come only from these. ADAPTER `-`
-turns a role off: `tracker -` stops detection from binding a tracker the
-project doesn't use.
+Nothing is guessed: a role no file binds has no adapter. ADAPTER `-`
+turns a role off, e.g. a user's `tracker -` over the project's tracker.
 
 The files have one binding per line, fields separated by blanks. Lines
 starting with `#` are comments. In `$GIT_DIR/memex/bindings` and `.memex`
@@ -70,12 +67,9 @@ REPO's remotes.
 
 An adapter is run as:
 
-    ADAPTER detect REPO
     ADAPTER ADDR ROLE COMMAND [ARGUMENTS]
 
-`detect` prints a line `ROLE ADDR` for each role whose SOURCE it
-recognizes in REPO and the project uses there, and nothing when there is
-none. For a ROLE it doesn't implement, an adapter exits 2.
+For a ROLE it doesn't implement, an adapter exits 2.
 
 Every adapter implements, for each of its roles:
 
