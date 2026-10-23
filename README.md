@@ -92,6 +92,10 @@ Editors:
 [memex-maloo]: https://github.com/roolebo/memex-maloo
 [vim-memex]: https://github.com/roolebo/vim-memex
 
-[1]: https://www.theatlantic.com/magazine/archive/1945/07/as-we-may-think/303881/
+## References
+
+1. Vannevar Bush, [As We May Think][1], Life Magazine, September 10, 1945
+
+[1]: https://worrydream.com/refs/Bush%20-%20As%20We%20May%20Think%20(Life%20Magazine%209-10-1945).pdf
 [2]: https://commons.wikimedia.org/wiki/File:Memex_at_Das_Netz_exhibition_of_Deutsches_Technikmuseum.jpg
 [3]: https://creativecommons.org/licenses/by/4.0/
