@@ -45,9 +45,6 @@ Adapters:
   and ci in Actions are planned
 - [memex-jira]: tracker in JIRA
 - [memex-jenkins]: ci in Jenkins
-
-Planned:
-
 - [memex-maloo]: ci in Maloo
 
 Editors:
