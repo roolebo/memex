@@ -93,16 +93,17 @@ run() {
   local all_unsupported=1
   local lines
   shift
-  lines=$(bindings "$role")
+  # ADAPTER - turns the role off
+  lines=$(bindings "$role" | awk '$1 != "-"')
   [ -n "$lines" ] || die "No $role binding for $REPO"
   # With one binding the adapter gets stdin, e.g. a draft's text
   if [ $(wc -l <<< "$lines") -eq 1 ]; then
     read -r adapter addr <<< "$lines"
-    exec "$adapter" "$addr" "$@"
+    exec "$adapter" "$addr" "$role" "$@"
   fi
   while read -r adapter addr; do
     status=0
-    "$adapter" "$addr" "$@" < /dev/null || status=$?
+    "$adapter" "$addr" "$role" "$@" < /dev/null || status=$?
     [ $status -eq 0 ] && result=0
     [ $status -ne 2 ] && all_unsupported=
   done <<< "$lines"

@@ -10,8 +10,8 @@ Terms:
                 mailing list archive, a JIRA instance
     ROLE        what a source holds for the project: code, discussion,
                 tracker or ci
-    ADAPTER     a program that implements one ROLE for one kind of SOURCE,
-                e.g. memex-gerrit for discussion in Gerrit
+    ADAPTER     a program that implements one or more ROLEs for one kind
+                of SOURCE, e.g. memex-gerrit for discussion in Gerrit
     ADDR        where an ADAPTER reaches its SOURCE, in a form the ADAPTER
                 defines, e.g. https://review.example.org
     BINDING     a ROLE of a project bound to an ADAPTER and ADDR
@@ -28,8 +28,8 @@ Terms:
   [tracker.md](tracker.md).
 - `ci`: test runs, their results and logs. Specified in [ci.md](ci.md).
 
-One service may serve several roles; each role has its own adapter. GitHub
-serving code, discussion and tracker for a project takes three adapters.
+One adapter serves every role its service has: memex-github serves
+discussion, tracker and ci. A project may use only some of them.
 
 ## Bindings
 
@@ -45,11 +45,12 @@ that binds it wins:
 2. `${XDG_CONFIG_HOME:-~/.config}/memex/bindings`: the user's, every
    working copy with a matching remote.
 3. `.memex` at the root of REPO: the project's, under version control.
-4. Detection: each installed adapter for the role is asked with `detect`,
-   which looks at what REPO already has, such as its remotes or a
-   `.gitreview`.
+4. Detection: each installed adapter is asked with `detect`, which looks
+   at what REPO already has, such as its remotes or a `.gitreview`.
 
-No adapter or ADDR is built in; they come only from these.
+No adapter or ADDR is built in; they come only from these. ADAPTER `-`
+turns a role off: `tracker -` stops detection from binding a tracker the
+project doesn't use.
 
 The files have one binding per line, fields separated by blanks. Lines
 starting with `#` are comments. In `$GIT_DIR/memex/bindings` and `.memex`
@@ -70,14 +71,15 @@ REPO's remotes.
 An adapter is run as:
 
     ADAPTER detect REPO
-    ADAPTER ADDR COMMAND [ARGUMENTS]
+    ADAPTER ADDR ROLE COMMAND [ARGUMENTS]
 
 `detect` prints a line `ROLE ADDR` for each role whose SOURCE it
-recognizes in REPO, and nothing when it recognizes none.
+recognizes in REPO and the project uses there, and nothing when there is
+none. For a ROLE it doesn't implement, an adapter exits 2.
 
-Every adapter implements:
+Every adapter implements, for each of its roles:
 
-    capabilities    print one JSON object: what this adapter supports
+    capabilities    print one JSON object: what it supports in ROLE
 
 A role's specification lists its other commands and capabilities.
 
