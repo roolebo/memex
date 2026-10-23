@@ -22,6 +22,42 @@ Tools are composed around the records the adapters produce.
 adapters. [discussion.md](discussion.md), [tracker.md](tracker.md) and
 [ci.md](ci.md) specify the roles.
 
+## Usage
+
+In a working copy:
+
+    memex bindings                  what each role is bound to
+    memex ROLE COMMAND [ARGUMENTS]  run a role's command
+
+The review threads of the change at HEAD:
+
+    memex discussion locate "$(git rev-parse HEAD)"
+    memex discussion threads CHANGE
+
+[skills/memex](skills/memex/SKILL.md) teaches an agent the same.
+
+## Integrations
+
+Adapters:
+
+- [memex-gerrit]: discussion in Gerrit; reads changes, series and
+  threads
+- [memex-github]: discussion in GitHub pull requests; specified
+- [memex-jira]: tracker in JIRA; specified
+- [memex-jenkins]: ci in Jenkins; specified
+- [memex-maloo]: ci in Maloo; specified
+
+Editors:
+
+- [vim-memex]: review threads in the quickfix list and after their lines
+
+[memex-gerrit]: https://github.com/roolebo/memex-gerrit
+[memex-github]: https://github.com/roolebo/memex-github
+[memex-jira]: https://github.com/roolebo/memex-jira
+[memex-jenkins]: https://github.com/roolebo/memex-jenkins
+[memex-maloo]: https://github.com/roolebo/memex-maloo
+[vim-memex]: https://github.com/roolebo/vim-memex
+
 [1]: https://www.theatlantic.com/magazine/archive/1945/07/as-we-may-think/303881/
 [2]: https://commons.wikimedia.org/wiki/File:Memex_at_Das_Netz_exhibition_of_Deutsches_Technikmuseum.jpg
 [3]: https://creativecommons.org/licenses/by/4.0/
