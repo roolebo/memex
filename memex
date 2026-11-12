@@ -45,6 +45,7 @@ EOF
 }
 
 CONFIG=${XDG_CONFIG_HOME:-$HOME/.config}/memex/bindings
+ROLES=(code discussion tracker ci)
 
 # Prints ROLE ADAPTER ADDR lines of a bindings file, without comments
 read_bindings() {
@@ -208,7 +209,7 @@ case "$1 $2" in
     ;;
 esac
 if [ "$1" == bindings -a $# -eq 1 ]; then
-  for role in code discussion tracker ci; do
+  for role in "${ROLES[@]}"; do
     bindings "$role" | sed "s/^/$role /"
   done
   exit 0
