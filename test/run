@@ -183,20 +183,16 @@ EOF
     'memex-fake-discussion https://review.example.org discussion threads 1'
 }
 
-test_user_over_project() {
-  needs discussion-1 discussion-2 tracker
+test_project_over_user() {
+  needs discussion-1 discussion-2
   echo 'discussion memex-fake-discussion-1 https://a.example.org' \
     > "$REPO/.memex"
-  echo 'tracker memex-fake-tracker https://jira.example.org' >> "$REPO/.memex"
   echo 'discussion memex-fake-discussion-2 https://b.example.org' \
     > "$XDG_CONFIG_HOME/memex/bindings"
 
   call discussion threads 1
-  check discussion "$(ran)" \
-    'memex-fake-discussion-2 https://b.example.org discussion threads 1'
-  call tracker issue X-1
-  check tracker "$(ran)" \
-    'memex-fake-tracker https://jira.example.org tracker issue X-1'
+  check project "$(ran)" \
+    'memex-fake-discussion-1 https://a.example.org discussion threads 1'
 }
 
 test_user_config_in_home() {
@@ -232,7 +228,8 @@ EOF
 test_off() {
   needs tracker
   echo 'tracker memex-fake-tracker https://jira.example.org' > "$REPO/.memex"
-  echo 'tracker -' > "$XDG_CONFIG_HOME/memex/bindings"
+  export MEMEX_BINDINGS=$TEST_DIR/bindings
+  echo 'tracker -' > "$MEMEX_BINDINGS"
 
   call tracker issue X-1
   check status "$STATUS" 1
@@ -329,10 +326,9 @@ tracker memex-fake-tracker https://jira.example.org
 ci memex-fake-ci-1 https://ci.example.org
 ci memex-fake-ci-2 https://test.example.org
 EOF
-  echo 'tracker -' > "$XDG_CONFIG_HOME/memex/bindings"
   export MEMEX_BINDINGS=$TEST_DIR/bindings
-  echo 'discussion memex-fake-discussion-2 https://c.example.org' \
-    > "$MEMEX_BINDINGS"
+  printf '%s\n' 'discussion memex-fake-discussion-2 https://c.example.org' \
+    'tracker -' > "$MEMEX_BINDINGS"
 
   call bindings
   check status "$STATUS" 0

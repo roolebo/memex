@@ -43,13 +43,13 @@ A project keeps its bindings in `.memex`, under version control, so
 whoever clones it has them. A user may override them. For each role, the
 first of these that binds it wins:
 
-1. `$MEMEX_BINDINGS`: the user's own.
-2. `${XDG_CONFIG_HOME:-~/.config}/memex/bindings`: the user's, every
-   working copy.
-3. `.memex` at the root of REPO: the project's.
+1. An override through the `MEMEX_BINDINGS` environment variable.
+2. `.memex` at the root of a REPO.
+3. `${XDG_CONFIG_HOME:-~/.config}/memex/bindings`: the local user config.
 
 Nothing is guessed: a role no file binds has no adapter. ADAPTER `-`
-turns a role off, e.g. a user's `tracker -` over the project's tracker.
+turns a role off, e.g. `tracker -` in `$MEMEX_BINDINGS` over the
+project's tracker.
 
 The files have one binding per line, fields separated by blanks: ROLE,
 ADAPTER, ADDR. Lines starting with `#` are comments.

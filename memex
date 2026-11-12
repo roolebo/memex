@@ -54,7 +54,7 @@ read_bindings() {
 bindings() {
   local source
   local found
-  for source in env user project; do
+  for source in env project user; do
     case $source in
       env) found=$(read_bindings "${MEMEX_BINDINGS:-}") ;;
       user) found=$(read_bindings "$CONFIG") ;;
