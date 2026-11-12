@@ -43,7 +43,7 @@ A project keeps its bindings in `.memex`, under version control, so
 whoever clones it has them. A user may override them. For each role, the
 first of these that binds it wins:
 
-1. `$GIT_DIR/memex/bindings` in REPO: the user's, this working copy only.
+1. `$MEMEX_BINDINGS`: the user's own.
 2. `${XDG_CONFIG_HOME:-~/.config}/memex/bindings`: the user's, every
    working copy.
 3. `.memex` at the root of REPO: the project's.

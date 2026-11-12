@@ -211,14 +211,14 @@ test_user_config_in_home() {
     'memex-fake-discussion https://b.example.org discussion threads 1'
 }
 
-test_git_dir_over_user() {
+test_environment_over_user() {
   needs discussion-1 discussion-2 discussion-3
   echo 'discussion memex-fake-discussion-1 https://a.example.org' \
     > "$REPO/.memex"
   echo 'discussion memex-fake-discussion-2 https://b.example.org' \
     > "$XDG_CONFIG_HOME/memex/bindings"
-  mkdir "$REPO/.git/memex"
-  cat > "$REPO/.git/memex/bindings" << EOF
+  export MEMEX_BINDINGS=$TEST_DIR/bindings
+  cat > "$MEMEX_BINDINGS" << EOF
 # mine
 
 discussion memex-fake-discussion-3 https://c.example.org
@@ -330,9 +330,9 @@ ci memex-fake-ci-1 https://ci.example.org
 ci memex-fake-ci-2 https://test.example.org
 EOF
   echo 'tracker -' > "$XDG_CONFIG_HOME/memex/bindings"
-  mkdir "$REPO/.git/memex"
+  export MEMEX_BINDINGS=$TEST_DIR/bindings
   echo 'discussion memex-fake-discussion-2 https://c.example.org' \
-    > "$REPO/.git/memex/bindings"
+    > "$MEMEX_BINDINGS"
 
   call bindings
   check status "$STATUS" 0
@@ -387,7 +387,8 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
 fi
 command -v jq > /dev/null || die "jq is not installed"
 trap cleanup EXIT
-# The user's git config doesn't apply
+# The user's MEMEX_BINDINGS and git config don't apply
+unset MEMEX_BINDINGS
 export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null
 
 TESTS=("$@")

@@ -54,9 +54,9 @@ read_bindings() {
 bindings() {
   local source
   local found
-  for source in git_dir user project; do
+  for source in env user project; do
     case $source in
-      git_dir) found=$(read_bindings "$GIT_DIR/memex/bindings") ;;
+      env) found=$(read_bindings "${MEMEX_BINDINGS:-}") ;;
       user) found=$(read_bindings "$CONFIG") ;;
       project) found=$(read_bindings "$REPO/.memex") ;;
     esac
@@ -106,7 +106,6 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
 fi
 
 REPO=$(git rev-parse --show-toplevel 2> /dev/null || true)
-GIT_DIR=$(git rev-parse --absolute-git-dir 2> /dev/null || true)
 
 # NB! A command that works outside a repository goes above this line
 [ -n "$REPO" ] || die "Not in a git working copy: $PWD"
