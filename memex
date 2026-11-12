@@ -49,21 +49,6 @@ read_bindings() {
   grep -Ev '^[[:space:]]*(#|$)' "$1" || true
 }
 
-# Prints the ROLE ADAPTER ADDR lines of the user's config for REPO's
-# remotes
-user_bindings() {
-  local remotes
-  local remote
-  local rest
-  [ -f "$CONFIG" ] || return 0
-  remotes=$(git -C "$REPO" remote -v | cut -f2 | cut -d' ' -f1 | sort -u)
-  read_bindings "$CONFIG" | while read -r remote rest; do
-    if grep -qxF "$remote" <<< "$remotes"; then
-      echo "$rest"
-    fi
-  done
-}
-
 # Prints the ADAPTER ADDR lines bound to a role, from the first source
 # that binds it
 bindings() {
@@ -72,7 +57,7 @@ bindings() {
   for source in git_dir user project; do
     case $source in
       git_dir) found=$(read_bindings "$GIT_DIR/memex/bindings") ;;
-      user) found=$(user_bindings) ;;
+      user) found=$(read_bindings "$CONFIG") ;;
       project) found=$(read_bindings "$REPO/.memex") ;;
     esac
     found=$(awk -v role="$1" '$1 == role { print $2, $3 }' <<< "$found")

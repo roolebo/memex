@@ -45,24 +45,18 @@ first of these that binds it wins:
 
 1. `$GIT_DIR/memex/bindings` in REPO: the user's, this working copy only.
 2. `${XDG_CONFIG_HOME:-~/.config}/memex/bindings`: the user's, every
-   working copy with a matching remote.
+   working copy.
 3. `.memex` at the root of REPO: the project's.
 
 Nothing is guessed: a role no file binds has no adapter. ADAPTER `-`
 turns a role off, e.g. a user's `tracker -` over the project's tracker.
 
-The files have one binding per line, fields separated by blanks. Lines
-starting with `#` are comments. In `$GIT_DIR/memex/bindings` and `.memex`
-the fields are ROLE, ADAPTER, ADDR:
+The files have one binding per line, fields separated by blanks: ROLE,
+ADAPTER, ADDR. Lines starting with `#` are comments.
 
     discussion  memex-gerrit   https://review.example.org
     tracker     memex-jira     https://jira.example.org
     ci          memex-jenkins  https://ci.example.org
-
-In `~/.config/memex/bindings` a REMOTE comes first: the URL of one of
-REPO's remotes.
-
-    https://git.example.org/project.git  tracker  memex-jira  https://jira.example.org
 
 ## Adapters
 

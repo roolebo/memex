@@ -2,16 +2,15 @@
 #
 # test/run: tests of the memex command, offline.
 #
-# Each test gets its own git repository with remotes, HOME and
-# XDG_CONFIG_HOME, all under a temporary directory. Adapters are fakes
-# from test/fake-adapter, named memex-fake-*.
+# Each test gets its own git repository, HOME and XDG_CONFIG_HOME, all
+# under a temporary directory. Adapters are fakes from test/fake-adapter,
+# named memex-fake-*.
 #
 
 set -e
 
 CURDIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 MEMEX=$(dirname "$CURDIR")/memex
-REMOTE=https://git.example.org/project.git
 DIR=$(mktemp -d)
 FAILED=0
 
@@ -156,7 +155,7 @@ EOF
 test_user_over_project() {
   echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
   echo 'tracker memex-fake-a https://jira.example.org' >> "$REPO/.memex"
-  echo "$REMOTE discussion memex-fake-b https://b.example.org" \
+  echo 'discussion memex-fake-b https://b.example.org' \
     > "$XDG_CONFIG_HOME/memex/bindings"
   call discussion threads 1
   check discussion "$(ran)" \
@@ -169,44 +168,15 @@ test_user_over_project() {
 test_user_config_in_home() {
   unset XDG_CONFIG_HOME
   mkdir -p "$HOME/.config/memex"
-  echo "$REMOTE discussion memex-fake-b https://b.example.org" \
+  echo 'discussion memex-fake-b https://b.example.org' \
     > "$HOME/.config/memex/bindings"
   call discussion threads 1
   check ran "$(ran)" 'memex-fake-b https://b.example.org discussion threads 1'
 }
 
-# Any of REPO's remotes matches, not only origin
-test_user_other_remote() {
-  echo "https://mirror.example.org/project.git discussion memex-fake-b" \
-    "https://b.example.org" > "$XDG_CONFIG_HOME/memex/bindings"
-  call discussion threads 1
-  check ran "$(ran)" 'memex-fake-b https://b.example.org discussion threads 1'
-}
-
-test_user_remote_not_matching() {
-  echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
-  echo "https://other.example.org/x.git discussion memex-fake-b x" \
-    > "$XDG_CONFIG_HOME/memex/bindings"
-  call discussion threads 1
-  check ran "$(ran)" 'memex-fake-a https://a.example.org discussion threads 1'
-}
-
-# A line for another remote before the matching one
-test_user_remote_not_matching_first() {
-  cat > "$XDG_CONFIG_HOME/memex/bindings" << EOF
-# comment
-
-https://other.example.org/x.git discussion memex-fake-a x
-$REMOTE discussion memex-fake-b https://b.example.org
-EOF
-  call discussion threads 1
-  check status "$STATUS" 0
-  check ran "$(ran)" 'memex-fake-b https://b.example.org discussion threads 1'
-}
-
 test_git_dir_over_user() {
   echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
-  echo "$REMOTE discussion memex-fake-b https://b.example.org" \
+  echo 'discussion memex-fake-b https://b.example.org' \
     > "$XDG_CONFIG_HOME/memex/bindings"
   mkdir "$REPO/.git/memex"
   cat > "$REPO/.git/memex/bindings" << EOF
@@ -220,7 +190,7 @@ EOF
 
 test_off() {
   echo 'tracker memex-fake-a https://jira.example.org' > "$REPO/.memex"
-  echo "$REMOTE tracker -" > "$XDG_CONFIG_HOME/memex/bindings"
+  echo 'tracker -' > "$XDG_CONFIG_HOME/memex/bindings"
   call tracker issue X-1
   check status "$STATUS" 1
   check out "$OUT" ''
@@ -302,7 +272,7 @@ tracker memex-fake-a https://jira.example.org
 ci memex-fake-a https://ci.example.org
 ci memex-fake-b https://test.example.org
 EOF
-  echo "$REMOTE tracker -" > "$XDG_CONFIG_HOME/memex/bindings"
+  echo 'tracker -' > "$XDG_CONFIG_HOME/memex/bindings"
   mkdir "$REPO/.git/memex"
   echo 'discussion memex-fake-c https://c.example.org' \
     > "$REPO/.git/memex/bindings"
@@ -314,17 +284,6 @@ EOF
     'tracker -' \
     'ci memex-fake-a https://ci.example.org' \
     'ci memex-fake-b https://test.example.org')"
-}
-
-# A line for another remote after the matching one
-test_bindings_remote_not_matching() {
-  cat > "$XDG_CONFIG_HOME/memex/bindings" << EOF
-$REMOTE discussion memex-fake-b https://b.example.org
-https://other.example.org/x.git discussion memex-fake-a x
-EOF
-  call bindings
-  check status "$STATUS" 0
-  check out "$OUT" 'discussion memex-fake-b https://b.example.org'
 }
 
 test_bindings_none() {
@@ -350,8 +309,6 @@ run() {
   git init -q "$REPO"
   git -C "$REPO" config user.name Test
   git -C "$REPO" config user.email test@example.org
-  git -C "$REPO" remote add origin "$REMOTE"
-  git -C "$REPO" remote add mirror https://mirror.example.org/project.git
   (
     export HOME=$TEST_DIR/home
     export XDG_CONFIG_HOME=$TEST_DIR/config
