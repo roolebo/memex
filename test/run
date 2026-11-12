@@ -81,6 +81,7 @@ test_history() {
   needs history
   printf '%s\n' 'discussion memex-fake-history https://review.example.org' \
     'code memex-fake-history https://git.example.org' > "$REPO/.memex"
+
   call history 1234
   check versions "$(versions)" "$(printf '%s\n' \
     '- cccc3333 /work/project' \
@@ -95,6 +96,7 @@ test_history_without_code() {
   needs history
   echo 'discussion memex-fake-history https://review.example.org' \
     > "$REPO/.memex"
+
   call history 1234
   check versions "$(versions)" "$(printf '%s\n' \
     '2 bbbb2222 server' '1 aaaa1111 server')"
@@ -104,6 +106,7 @@ test_review() {
   needs history
   echo 'discussion memex-fake-history https://review.example.org' \
     > "$REPO/.memex"
+
   call review 1234
   check status "$STATUS" 0
   check kinds "$(jq -r '"\(.kind) \(.id)"' <<< "$OUT")" \
@@ -116,6 +119,7 @@ test_review_head() {
   echo 'discussion memex-fake-history https://review.example.org' \
     > "$REPO/.memex"
   git -C "$REPO" commit -q --allow-empty -m one
+
   call review
   check status "$STATUS" 0
   check kinds "$(jq -r .kind <<< "$OUT" | tr '\n' ' ')" 'change thread '
@@ -129,6 +133,7 @@ test_commit_head() {
   git -C "$REPO" commit -q --allow-empty -m two
   local head
   head=$(git -C "$REPO" rev-parse HEAD)
+
   call ci runs
   check default "$(ran)" "memex-fake-a https://ci.example.org ci runs $head"
   call ci runs HEAD~1
@@ -141,6 +146,7 @@ test_commit_head() {
 test_project() {
   needs a
   echo 'discussion memex-fake-a https://review.example.org' > "$REPO/.memex"
+
   call discussion threads 1234
   check status "$STATUS" 0
   check ran "$(ran)" \
@@ -152,6 +158,7 @@ test_subdirectory() {
   echo 'discussion memex-fake-a https://review.example.org' > "$REPO/.memex"
   mkdir "$REPO/sub"
   REPO=$REPO/sub
+
   call discussion threads 1234
   check status "$STATUS" 0
   check_has ran "$(ran)" memex-fake-a
@@ -166,6 +173,7 @@ test_comments_and_blank_lines() {
 discussion memex-fake-a https://review.example.org
 
 EOF
+
   call discussion threads 1
   check status "$STATUS" 0
   check ran "$(ran)" \
@@ -178,6 +186,7 @@ test_user_over_project() {
   echo 'tracker memex-fake-a https://jira.example.org' >> "$REPO/.memex"
   echo 'discussion memex-fake-b https://b.example.org' \
     > "$XDG_CONFIG_HOME/memex/bindings"
+
   call discussion threads 1
   check discussion "$(ran)" \
     'memex-fake-b https://b.example.org discussion threads 1'
@@ -192,6 +201,7 @@ test_user_config_in_home() {
   mkdir -p "$HOME/.config/memex"
   echo 'discussion memex-fake-b https://b.example.org' \
     > "$HOME/.config/memex/bindings"
+
   call discussion threads 1
   check ran "$(ran)" 'memex-fake-b https://b.example.org discussion threads 1'
 }
@@ -207,6 +217,7 @@ test_git_dir_over_user() {
 
 discussion memex-fake-c https://c.example.org
 EOF
+
   call discussion threads 1
   check ran "$(ran)" 'memex-fake-c https://c.example.org discussion threads 1'
 }
@@ -215,6 +226,7 @@ test_off() {
   needs a
   echo 'tracker memex-fake-a https://jira.example.org' > "$REPO/.memex"
   echo 'tracker -' > "$XDG_CONFIG_HOME/memex/bindings"
+
   call tracker issue X-1
   check status "$STATUS" 1
   check out "$OUT" ''
@@ -229,6 +241,7 @@ test_no_binding() {
 
 test_not_a_working_copy() {
   REPO=$TEST_DIR
+
   call discussion threads 1
   check status "$STATUS" 1
   check_has err "$ERR" 'Not in a git working copy'
@@ -238,6 +251,7 @@ test_stdin_with_one_binding() {
   needs a
   echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
   echo '{"text": "hi"}' > "$IN"
+
   call discussion draft 1
   check stdin "$(jq -r .stdin <<< "$OUT")" '{"text": "hi"}'
 }
@@ -245,6 +259,7 @@ test_stdin_with_one_binding() {
 test_one_binding_status() {
   needs fail unsupported
   echo 'discussion memex-fake-unsupported x' > "$REPO/.memex"
+
   call discussion series 1
   check unsupported "$STATUS" 2
   echo 'discussion memex-fake-fail x' > "$REPO/.memex"
@@ -260,6 +275,7 @@ discussion memex-fake-a https://a.example.org
 discussion memex-fake-b https://b.example.org
 EOF
   echo '{"text": "hi"}' > "$IN"
+
   call discussion draft 1
   check status "$STATUS" 0
   check ran "$(ran)" "$(printf '%s\n' \
@@ -271,6 +287,7 @@ EOF
 test_several_one_succeeds() {
   needs a fail unsupported
   printf 'ci memex-fake-fail x\nci memex-fake-a y\n' > "$REPO/.memex"
+
   call ci runs 1
   check status "$STATUS" 0
   printf 'ci memex-fake-unsupported x\nci memex-fake-a y\n' > "$REPO/.memex"
@@ -282,6 +299,7 @@ test_several_all_unsupported() {
   needs unsupported unsupported2
   printf 'ci memex-fake-unsupported x\nci memex-fake-unsupported2 y\n' \
     > "$REPO/.memex"
+
   call ci runs 1
   check status "$STATUS" 2
   check ran "$(ran | wc -l | tr -d ' ')" 2
@@ -291,6 +309,7 @@ test_several_failed() {
   needs fail unsupported
   printf 'ci memex-fake-unsupported x\nci memex-fake-fail y\n' \
     > "$REPO/.memex"
+
   call ci runs 1
   check status "$STATUS" 1
 }
@@ -307,6 +326,7 @@ EOF
   mkdir "$REPO/.git/memex"
   echo 'discussion memex-fake-c https://c.example.org' \
     > "$REPO/.git/memex/bindings"
+
   call bindings
   check status "$STATUS" 0
   # A role turned off has no ADDR
