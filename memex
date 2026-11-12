@@ -123,9 +123,11 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
   exit 0
 fi
 
-REPO=$(git rev-parse --show-toplevel 2> /dev/null) ||
-  die "Not in a git working copy: $PWD"
-GIT_DIR=$(git rev-parse --absolute-git-dir)
+REPO=$(git rev-parse --show-toplevel 2> /dev/null || true)
+GIT_DIR=$(git rev-parse --absolute-git-dir 2> /dev/null || true)
+
+# NB! A command that works outside a repository goes above this line
+[ -n "$REPO" ] || die "Not in a git working copy: $PWD"
 
 # Prints the change RECORD of CHANGE, or of HEAD's change
 change() {
