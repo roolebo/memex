@@ -55,7 +55,6 @@ starting with `#` are comments. In `$GIT_DIR/memex/bindings` and `.memex`
 the fields are ROLE, ADAPTER, ADDR:
 
     discussion  memex-gerrit   https://review.example.org
-    discussion  memex-lore     https://lore.kernel.org/example
     tracker     memex-jira     https://jira.example.org
     ci          memex-jenkins  https://ci.example.org
 
