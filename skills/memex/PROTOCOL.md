@@ -36,7 +36,8 @@ discussion, tracker and ci. A project may use only some of them.
 
 A project has at most one binding per role, except `discussion` and `ci`,
 which may have several: a project may review both in Gerrit and on a
-mailing list, and build in one CI system and test in another.
+mailing list, and build in one CI system and test in another. memex runs
+a command with each of a role's adapters in turn.
 
 A project keeps its bindings in `.memex`, under version control, so
 whoever clones it has them. A user may override them. For each role, the
@@ -78,8 +79,8 @@ Every adapter implements, for each of its roles:
 A role's specification lists its other commands and capabilities.
 
 Commands print RECORDs on stdout, one per line. Input that isn't a short
-argument, such as text, is read from stdin. An adapter never asks the
-human anything.
+argument, such as text, is read from stdin. memex and its adapters never
+ask the human anything.
 
 Exit status:
 
