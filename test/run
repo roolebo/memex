@@ -324,7 +324,6 @@ test_bindings_none() {
 }
 
 test_usage() {
-  needs history
   call discussion
   check status "$STATUS" 1
   check_has err "$ERR" Usage
