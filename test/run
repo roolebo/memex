@@ -42,6 +42,18 @@ call() {
   ERR=$(< "$TEST_DIR/err")
 }
 
+# Puts the fake adapters memex-fake-NAME on the test's PATH: NAME history
+# from test/fake-history, any other from test/fake-adapter
+needs() {
+  local name
+  local script
+  for name in "$@"; do
+    script=fake-adapter
+    [ "$name" != history ] || script=fake-history
+    ln -s "$CURDIR/$script" "$TEST_DIR/bin/memex-fake-$name"
+  done
+}
+
 # The names of the adapters that ran, and their arguments, one per line
 ran() {
   jq -r '[.name] + .args | join(" ")' <<< "$OUT"
@@ -66,6 +78,7 @@ versions() {
 }
 
 test_history() {
+  needs history
   printf '%s\n' 'discussion memex-fake-history https://review.example.org' \
     'code memex-fake-history https://git.example.org' > "$REPO/.memex"
   call history 1234
@@ -79,6 +92,7 @@ test_history() {
 }
 
 test_history_without_code() {
+  needs history
   echo 'discussion memex-fake-history https://review.example.org' \
     > "$REPO/.memex"
   call history 1234
@@ -87,6 +101,7 @@ test_history_without_code() {
 }
 
 test_review() {
+  needs history
   echo 'discussion memex-fake-history https://review.example.org' \
     > "$REPO/.memex"
   call review 1234
@@ -97,6 +112,7 @@ test_review() {
 
 # Without CHANGE, the change of HEAD
 test_review_head() {
+  needs history
   echo 'discussion memex-fake-history https://review.example.org' \
     > "$REPO/.memex"
   git -C "$REPO" commit -q --allow-empty -m one
@@ -107,6 +123,7 @@ test_review_head() {
 
 # A COMMIT may be a git revision, HEAD when left out
 test_commit_head() {
+  needs a
   echo 'ci memex-fake-a https://ci.example.org' > "$REPO/.memex"
   git -C "$REPO" commit -q --allow-empty -m one
   git -C "$REPO" commit -q --allow-empty -m two
@@ -122,6 +139,7 @@ test_commit_head() {
 }
 
 test_project() {
+  needs a
   echo 'discussion memex-fake-a https://review.example.org' > "$REPO/.memex"
   call discussion threads 1234
   check status "$STATUS" 0
@@ -130,6 +148,7 @@ test_project() {
 }
 
 test_subdirectory() {
+  needs a
   echo 'discussion memex-fake-a https://review.example.org' > "$REPO/.memex"
   mkdir "$REPO/sub"
   REPO=$REPO/sub
@@ -139,6 +158,7 @@ test_subdirectory() {
 }
 
 test_comments_and_blank_lines() {
+  needs a
   cat > "$REPO/.memex" << EOF
 # The project's
 
@@ -153,6 +173,7 @@ EOF
 }
 
 test_user_over_project() {
+  needs a b
   echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
   echo 'tracker memex-fake-a https://jira.example.org' >> "$REPO/.memex"
   echo 'discussion memex-fake-b https://b.example.org' \
@@ -166,6 +187,7 @@ test_user_over_project() {
 }
 
 test_user_config_in_home() {
+  needs b
   unset XDG_CONFIG_HOME
   mkdir -p "$HOME/.config/memex"
   echo 'discussion memex-fake-b https://b.example.org' \
@@ -175,6 +197,7 @@ test_user_config_in_home() {
 }
 
 test_git_dir_over_user() {
+  needs a b c
   echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
   echo 'discussion memex-fake-b https://b.example.org' \
     > "$XDG_CONFIG_HOME/memex/bindings"
@@ -189,6 +212,7 @@ EOF
 }
 
 test_off() {
+  needs a
   echo 'tracker memex-fake-a https://jira.example.org' > "$REPO/.memex"
   echo 'tracker -' > "$XDG_CONFIG_HOME/memex/bindings"
   call tracker issue X-1
@@ -211,6 +235,7 @@ test_not_a_working_copy() {
 }
 
 test_stdin_with_one_binding() {
+  needs a
   echo 'discussion memex-fake-a https://a.example.org' > "$REPO/.memex"
   echo '{"text": "hi"}' > "$IN"
   call discussion draft 1
@@ -218,6 +243,7 @@ test_stdin_with_one_binding() {
 }
 
 test_one_binding_status() {
+  needs fail unsupported
   echo 'discussion memex-fake-unsupported x' > "$REPO/.memex"
   call discussion series 1
   check unsupported "$STATUS" 2
@@ -228,6 +254,7 @@ test_one_binding_status() {
 
 # Each runs, with no stdin
 test_several_bindings() {
+  needs a b
   cat > "$REPO/.memex" << EOF
 discussion memex-fake-a https://a.example.org
 discussion memex-fake-b https://b.example.org
@@ -242,6 +269,7 @@ EOF
 }
 
 test_several_one_succeeds() {
+  needs a fail unsupported
   printf 'ci memex-fake-fail x\nci memex-fake-a y\n' > "$REPO/.memex"
   call ci runs 1
   check status "$STATUS" 0
@@ -251,6 +279,7 @@ test_several_one_succeeds() {
 }
 
 test_several_all_unsupported() {
+  needs unsupported unsupported2
   printf 'ci memex-fake-unsupported x\nci memex-fake-unsupported2 y\n' \
     > "$REPO/.memex"
   call ci runs 1
@@ -259,6 +288,7 @@ test_several_all_unsupported() {
 }
 
 test_several_failed() {
+  needs fail unsupported
   printf 'ci memex-fake-unsupported x\nci memex-fake-fail y\n' \
     > "$REPO/.memex"
   call ci runs 1
@@ -266,6 +296,7 @@ test_several_failed() {
 }
 
 test_bindings() {
+  needs a b c
   cat > "$REPO/.memex" << EOF
 discussion memex-fake-a https://a.example.org
 tracker memex-fake-a https://jira.example.org
@@ -293,6 +324,7 @@ test_bindings_none() {
 }
 
 test_usage() {
+  needs history
   call discussion
   check status "$STATUS" 1
   check_has err "$ERR" Usage
@@ -304,7 +336,7 @@ run() {
   TEST_DIR=$DIR/$1
   REPO=$TEST_DIR/repo
   IN=$TEST_DIR/in
-  mkdir -p "$TEST_DIR/home" "$TEST_DIR/config/memex"
+  mkdir -p "$TEST_DIR/home" "$TEST_DIR/config/memex" "$TEST_DIR/bin"
   : > "$IN"
   git init -q "$REPO"
   git -C "$REPO" config user.name Test
@@ -312,6 +344,7 @@ run() {
   (
     export HOME=$TEST_DIR/home
     export XDG_CONFIG_HOME=$TEST_DIR/config
+    export PATH=$TEST_DIR/bin:$PATH
     "$1"
     exit $((FAILED - failed))
   ) || FAILED=$((FAILED + $?))
@@ -328,12 +361,6 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
 fi
 command -v jq > /dev/null || die "jq is not installed"
 trap cleanup EXIT
-mkdir "$DIR/bin"
-for name in a b c fail unsupported unsupported2; do
-  ln -s "$CURDIR/fake-adapter" "$DIR/bin/memex-fake-$name"
-done
-ln -s "$CURDIR/fake-history" "$DIR/bin/memex-fake-history"
-export PATH=$DIR/bin:$PATH
 # The user's git config doesn't apply
 export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null
 
